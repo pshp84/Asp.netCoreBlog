@@ -1,0 +1,150 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@inject SignInManager<BlogSample.Data.User> SignInManager
+@inject Microsoft.Extensions.Options.IOptionsMonitor<BlogSample.Business.BlogSettings> BlogSettings
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - @BlogSettings.CurrentValue.BlogName</title>
+    <link rel="stylesheet" href="~/dist/combined.min.css" asp-append-version="true" />
+    <link rel="shortcut icon" href="~/favicon.ico" type="image/x-icon" />
+    <link rel="apple-touch-icon" href="~/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" href="~/apple-touch-icon_192.png" sizes="192x192" />
+    <meta name="theme-color" content="#2F5890">
+    <meta name="msapplication-navbutton-color" content="#2F5890">
+    <meta name="apple-mobile-web-app-status-bar-style" content="#2F5890">
+</head>
+<body>
+    @if (this.TempData.ContainsKey(BlogSample.Web.Infrastructure.Mvc.ControllerExtensions.SuccessMessage))
+    {
+        <div class="successmessage">
+            @this.TempData[BlogSample.Web.Infrastructure.Mvc.ControllerExtensions.SuccessMessage]
+        </div>
+    }
+    @if (this.TempData.ContainsKey(BlogSample.Web.Infrastructure.Mvc.ControllerExtensions.WarningMessage))
+    {
+        <div class="warningmessage">
+            @this.TempData[BlogSample.Web.Infrastructure.Mvc.ControllerExtensions.WarningMessage]
+        </div>
+    }
+    @if (this.TempData.ContainsKey(BlogSample.Web.Infrastructure.Mvc.ControllerExtensions.ErrorMessage))
+    {
+        <div class="errormessage">
+            @this.TempData[BlogSample.Web.Infrastructure.Mvc.ControllerExtensions.ErrorMessage]
+        </div>
+    }
+    <div class="flexcontainer">
+        <nav-menu class="flexmenu">
+            <ul class="hamburger">
+                <li>
+                    <a href="#" class="togglemenu">
+                        <i class="fas fa-bars"></i>
+                    </a>
+                </li>
+            </ul>
+
+            <ul class="navigation">
+                <li title="@Localizer["Home"]" class="@(ViewData["SelectedMenuItem"] as string == "Home" ? "link-active" : "")">
+                    <a href="~/">
+                        <i class="fas fa-home" aria-hidden="true"></i><span class="expandedonly">@Localizer["Home"]</span>
+                    </a>
+                </li>
+                @if (SignInManager.IsSignedIn(User) && User.IsInRole(AuthRoles.Administrator))
+                {
+                    <li title="@Localizer["Blog entries"]" class="@(ViewData["SelectedMenuItem"] as string == "BlogEntries" ? "link-active" : "")">
+                        <a asp-action="Index" asp-controller="Administration">
+                            <i class="fas fa-th" aria-hidden="true"></i><span class="expandedonly"> @Localizer["Blog entries"]</span>
+                        </a>
+                    </li>
+                    <li title="@Localizer["Downloads"]" class="ident identshadow @(ViewData["SelectedMenuItem"] as string == "Downloads" ? "link-active" : "")">
+                        <a asp-action="Downloads" asp-controller="Administration">
+                            <i class="fa fa-chart-line" aria-hidden="true"></i><span class="expandedonly"> @Localizer["Downloads"]</span>
+                        </a>
+                    </li>
+                    <li title="@Localizer["Images"]" class="@(ViewData["SelectedMenuItem"] as string == "Images" ? "link-active" : "")">
+                        <a asp-action="Images" asp-controller="Administration">
+                            <i class="fas fa-images" aria-hidden="true"></i><span class="expandedonly"> @Localizer["Images"]</span>
+                        </a>
+                    </li>
+                    <li title="@Localizer["Users"]" class="@(ViewData["SelectedMenuItem"] as string == "Users" ? "link-active" : "")">
+                        <a asp-action="Users" asp-controller="Administration">
+                            <i class="fas fa-users" aria-hidden="true"></i><span class="expandedonly"> @Localizer["Users"]</span>
+                        </a>
+                    </li>
+                }
+
+                @if (!SignInManager.IsSignedIn(User))
+                {
+                    if (BlogSettings.CurrentValue.NewUsersCanRegister)
+                    {
+                        <li title="@Localizer["Register"]" class="@(ViewData["SelectedMenuItem"] as string == "Register" ? "link-active" : "")">
+                            <a asp-area="Identity" asp-page="/Account/Register">
+                                <i class="fas fa-user-plus" aria-hidden="true"></i><span class="expandedonly">@Localizer["Register"]</span>
+                            </a>
+                        </li>
+                    }
+                    <li title="@Localizer["Login"]" class="@(ViewData["SelectedMenuItem"] as string == "Login" ? "link-active" : "")">
+                        <a asp-area="Identity" asp-page="/Account/Login">
+                            <i class="fas fa-sign-in-alt" aria-hidden="true"></i><span class="expandedonly">@Localizer["Login"]</span>
+                        </a>
+                    </li>
+                }
+                else
+                {
+                     @if (SignInManager.IsSignedIn(User) && !User.IsInRole(AuthRoles.Administrator))
+                {
+                    <li title="@Localizer["New Blog Entry"]" class="@(ViewData["SelectedMenuItem"] as string == "New Blog Entry" ? "link-active" : "")">
+                        <a asp-action="EditBlogEntry" asp-controller="Administration">
+                            <i class="fas fa-th" aria-hidden="true"></i><span class="expandedonly"> @Localizer["New Blog Entry"]</span>
+                        </a>
+                    </li>
+                }
+                    <li title="@Localizer["Settings"]" class="@(ViewData["SelectedMenuItem"] as string == "My Profile" ? "link-active" : "")">
+                        <a asp-area="Identity" asp-page="/Account/Manage/Index">
+                            <i class="fas fa-user-cog" aria-hidden="true"></i><span class="expandedonly">@Localizer["My Profile"]</span>
+                        </a>
+                    </li>
+                }
+            </ul>
+        </nav-menu>
+        <div class="flexcontent">
+            <div class="container-fluid">
+                <div class="titlebar">
+                    <div class="float-right d-print-none">
+                        @if (SignInManager.IsSignedIn(User))
+                        {
+                            <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Blog", new { area = "" })">
+                                <button type="submit" class="btn btn-link text-light"><i class="fas fa-sign-out-alt"> Log Out</i></button>
+                            </form>
+                        }
+                    </div>
+                    <h1>
+                        @ViewData["Title"]
+                    </h1>
+                </div>
+                <div class="maincontent">
+                    @RenderBody()
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <partial name="_CookieConsentPartial" />
+    @*
+        <main role="main" class="pb-3">
+        @RenderBody()
+        </main>*@
+    <footer class="border-top footer text-muted text-center d-print-none">
+        <div class="container">
+            <p> © 2022. BLOG POST</p>
+        </div>
+    </footer>
+
+    <script src="~/dist/combined.min.js" asp-append-version="true"></script>
+
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

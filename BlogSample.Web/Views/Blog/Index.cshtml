@@ -1,0 +1,85 @@
+﻿@model BlogSample.Web.Models.Blog.IndexViewModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<BlogSample.Data.User> SignInManager
+
+@{
+    ViewData["Title"] = Localizer["Blog"];
+    ViewData["SelectedMenuItem"] = "Home";
+}
+<header>
+    <a href="~/" class="banner d-print-none"></a>
+</header>
+<nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom shadow-sm mb-3">
+    <a class="navbar-brand" href="~/">Blog</a>
+    @* @if (SignInManager.IsSignedIn(User) && User.IsInRole(AuthRoles.Administrator))
+        {
+        <a asp-controller="Administration" asp-action="Index" class="nav-link text-dark"><i class="fas fa-tools"></i> Panel</a>
+        }*@
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+            aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="navbar-collapse collapse d-sm-inline-flex">
+        <form class="form-inline" action="~/" method="get">
+            <input class="form-control mr-sm-2" type="search" name="search" placeholder="@Localizer["Search"]" aria-label="Search">
+            <button class="btn btn-outline-dark my-2 my-sm-0" type="submit">@Localizer["Search"]</button>
+        </form>
+    </div>
+</nav>
+<h1>@ViewData["Title"]</h1>
+
+@if (!string.IsNullOrEmpty(this.Model!.Tag) || !string.IsNullOrEmpty(this.Model.Search))
+{
+    <div class="card mt-3 mb-3">
+        <div class="card-body">
+            @if (!string.IsNullOrEmpty(this.Model.Tag))
+            {
+                <i class="fas fa-tag"></i>
+                <text>@Localizer["Tag"]: @this.Model.Tag</text>
+            }
+
+            @if (!string.IsNullOrEmpty(this.Model.Tag) && !string.IsNullOrEmpty(this.Model.Search))
+            {
+                <br />
+            }
+            @if (!string.IsNullOrEmpty(this.Model.Search))
+            {
+                <i class="fas fa-search"></i>
+                <text>@Localizer["Search:"] @this.Model.Search</text>
+            }
+        </div>
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-12 col-lg-9">
+        @if (this.Model.Entries.TotalNumberOfItems > 0)
+        {
+            foreach (var entry in this.Model.Entries)
+            {
+                <article class="mb-4">
+                    <h2><a href="~/Blog/@entry.Url">@entry.Header</a></h2>
+                    <partial name="_Header" model="@entry" />
+                </article>
+            }
+
+            <pager paged-result="this.Model.Entries"></pager>
+        }
+        else
+        {
+            <p>@Localizer["No blog posts available"]</p>
+        }
+    </div>
+    <div class="col-lg-3 d-none d-sm-none d-md-none d-lg-block">
+        @if (Model.Tags.Count > 0)
+        {
+            <h3>@Localizer["Tags"]</h3>
+            @foreach (var tag in Model.Tags)
+            {
+                <i class="fas fa-tag"></i> <a asp-controller="Blog" asp-action="Index" asp-route-tag="@tag.Name" class="text-nowrap">@tag.Name</a>
+            }
+        }
+
+    </div>
+</div>
